@@ -42,22 +42,21 @@ def format_record(query, ss_pred, alignment, consensus, coord_from, coord_to, le
     return record
 
 def read_hhr(file):
+    next_line_match = False
+    template = scores = None
     for line in file:
-        if '\x00' in line:
-            record = format_record(query, ss_pred, alignment, consensus, coord_from, coord_to, lens, template, description, match, confidence)
-            yield {**record, **scores}
-            line = line.replace('\x00', '')
+        line = line.replace('\x00', '')
         key, value, rest = parse_line(line) 
         if key == "Query":
+            if template:
+                record = format_record(query, ss_pred, alignment, consensus, coord_from, coord_to, lens, template, description, match, confidence)
+                yield {**record, **scores}
             query = value
             template = scores = None
             next_line_match = False
         elif key.startswith("Probab="):
             scores = parse_scores(line)
         elif key.startswith(">"):
-            if template:
-                record = format_record(query, ss_pred, alignment, consensus, coord_from, coord_to, lens, template, description, match, confidence)
-                yield {**record, **scores}
             template = key[1:]
             description = f"{value} {rest}".strip()
             ss_pred   = { "Q": "", "T": "" }
@@ -90,3 +89,6 @@ def read_hhr(file):
         elif next_line_match:
             match += line[match_start:match_stop]
             next_line_match = False
+    if template:
+        record = format_record(query, ss_pred, alignment, consensus, coord_from, coord_to, lens, template, description, match, confidence)
+        yield {**record, **scores}
