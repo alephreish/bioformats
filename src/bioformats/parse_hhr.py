@@ -75,7 +75,7 @@ def read_hhr(file):
                 consensus[key] += cons
                 if key == "Q":
                     next_line_match = True
-                    match_start = line.index(cons)
+                    match_start = line.rindex(cons)
                     match_stop  = match_start + len(cons)
             else:
                 start, aln, end, total = parse_match(rest)
