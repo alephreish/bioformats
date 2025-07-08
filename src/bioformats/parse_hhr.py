@@ -17,11 +17,12 @@ def parse_line(line):
         fields.append("")
     return fields
 
-def format_record(query, ss_pred, alignment, consensus, coord_from, coord_to, lens, template, description, match, confidence):
+def format_record(query, ss_pred, ss_dssp, alignment, consensus, coord_from, coord_to, lens, template, description, match, confidence):
     record = {
         "query": {
             "name": query,
             "ss_pred": ss_pred["Q"],
+            "ss_dssp": ss_dssp["Q"],
             "alignment": alignment["Q"],
             "consensus": consensus["Q"],
             "coords": [ coord_from["Q"], coord_to["Q"] ],
@@ -31,6 +32,7 @@ def format_record(query, ss_pred, alignment, consensus, coord_from, coord_to, le
             "name": template,
             "description": description,
             "ss_pred": ss_pred["T"],
+            "ss_dssp": ss_dssp["T"],
             "alignment": alignment["T"],
             "consensus": consensus["T"],
             "coords": [ coord_from["T"], coord_to["T"] ],
@@ -49,7 +51,7 @@ def read_hhr(file):
         key, value, rest = parse_line(line) 
         if key == "Query":
             if template:
-                record = format_record(query, ss_pred, alignment, consensus, coord_from, coord_to, lens, template, description, match, confidence)
+                record = format_record(query, ss_pred, ss_dssp, alignment, consensus, coord_from, coord_to, lens, template, description, match, confidence)
                 yield {**record, **scores}
             query = value
             template = scores = None
@@ -60,6 +62,7 @@ def read_hhr(file):
             template = key[1:]
             description = f"{value} {rest}".strip()
             ss_pred   = { "Q": "", "T": "" }
+            ss_dssp   = { "Q": "", "T": "" }
             consensus = { "Q": "", "T": "" }
             alignment = { "Q": "", "T": "" }
             coord_to = { "Q": None, "T": None }
@@ -70,6 +73,8 @@ def read_hhr(file):
         elif key == "Q" or key == "T":
             if value == "ss_pred":
                 ss_pred[key] += rest.strip()
+            elif value == "ss_dssp":
+                ss_dssp[key] += rest.strip()
             elif value == "Consensus":
                 start, cons, end, total = parse_match(rest)
                 consensus[key] += cons
@@ -90,5 +95,5 @@ def read_hhr(file):
             match += line[match_start:match_stop]
             next_line_match = False
     if template:
-        record = format_record(query, ss_pred, alignment, consensus, coord_from, coord_to, lens, template, description, match, confidence)
+        record = format_record(query, ss_pred, ss_dssp, alignment, consensus, coord_from, coord_to, lens, template, description, match, confidence)
         yield {**record, **scores}
