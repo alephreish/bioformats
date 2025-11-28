@@ -56,6 +56,11 @@ def read_hhr(file):
             query = value
             template = scores = None
             next_line_match = False
+        elif key == "No":
+            if template:
+                record = format_record(query, ss_pred, ss_dssp, alignment, consensus, coord_from, coord_to, lens, template, description, match, confidence)
+                yield {**record, **scores}
+                template = None
         elif key.startswith("Probab="):
             scores = parse_scores(line)
         elif key.startswith(">"):
