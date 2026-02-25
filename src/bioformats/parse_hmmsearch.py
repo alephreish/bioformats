@@ -123,7 +123,6 @@ def parse_aln_block(fh):
     else:
         vals['RF'] = ''
 
-    line = next(fh)
     fields = re.split(" +", line.strip())
     vals['hmm_left']  = fields[-3]
     vals['hmm_seq']   = fields[-2]
