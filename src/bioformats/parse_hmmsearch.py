@@ -115,8 +115,13 @@ def parse_aln_block(fh):
     vals = {}
 
     line = next(fh)
-    fields = re.split(' +', line.strip(), 2)
-    vals['RF'] = fields[0]
+
+    if line.endswith('RF'):
+        fields = re.split(' +', line.strip(), 2)
+        vals['RF'] = fields[0]
+        line = next(fh)
+    else:
+        vals['RF'] = ''
 
     line = next(fh)
     fields = re.split(" +", line.strip())
